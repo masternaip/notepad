@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackNote Notepad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            box-sizing: border-box;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #toolbar {
+            background-color: #1f1f1f;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 0;
+            border-radius: 0;
+            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        #toolbar button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            flex: 1;
+            margin: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        #toolbar button:hover {
+            background-color: #45a049;
+        }
+
+        #toolbar button:active {
+            background-color: #388e3c;
+        }
+
+        #note-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 800px;
+            margin-top: 20px;
+            margin-bottom: 70px;
+            padding-bottom: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .note {
+            background-color: #262626;
+            color: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+
+        .note:hover {
+            background-color: #333333;
+        }
+
+        .note h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #ffeb3b;
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note p {
+            margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .note textarea {
+            width: 100%;
+            resize: none;
+            border: none;
+            background-color: #262626;
+            color: #f5f5f5;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 10px 0;
+            border-bottom: 2px solid #616161;
+            margin-bottom: 15px;
+            font-family: 'Inter', sans-serif;
+            min-height: 100px;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        .note textarea:focus {
+            outline: none;
+            border-bottom-color: #4CAF50;
+        }
+
+        .note .delete-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            z-index: 10;
+        }
+
+        .note .delete-button:hover {
+            background-color: #d32f2f;
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-content {
+            background-color: #262626;
+            color: #f5f5f5;
+            padding: 20px;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 80px;
+            overflow-y: auto;
+            max-height: 80%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #modal-content h2 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #ffeb3b;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+
+        #modal-content textarea {
+            width: 100%;
+            resize: none;
+            border: 1px solid #616161;
+            background-color: #333333;
+            color: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+            min-height: 120px;
+            box-sizing: border-box;
+        }
+
+        #modal-content textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+
+        #modal-content .modal-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            align-self: flex-end;
+        }
+
+        #modal-content .modal-button:hover {
+            background-color: #45a049;
+        }
+          #modal-content .modal-button:active {
+            background-color: #388e3c;
+        }
+
+        #modal-content .modal-cancel-button {
+            background-color: #808080;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            align-self: flex-end;
+            margin-right: 0;
+        }
+
+        #modal-content .modal-cancel-button:hover {
+            background-color: #696969;
+        }
+        #modal-content .modal-cancel-button:active{
+             background-color: #555555;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Styles for icons - using Unicode characters */
+        #add-note-button::before {
+            content: "➕ ";
+            margin-right: 8px;
+        }
+        #export-notes-button::before {
+            content: "📤 ";
+            margin-right: 8px;
+        }
+        .note .delete-button::before {
+            content: "❌ ";
+            margin-right: 5px;
+        }
+        .note .edit-button::before{
+            content: "✏️ ";
+            margin-right: 5px;
+        }
+        #modal-save-button::before{
+            content: "✔️ ";
+            margin-right: 5px;
+        }
+        #modal-cancel-button::before{
+            content: "🚫 ";
+            margin-right: 5px;
+        }
+
+        /* Media query for smaller screens (e.g., Android phones) */
+        @media (max-width: 600px) {
+            #toolbar {
+                padding: 8px;
+            }
+            #toolbar button {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            .note {
+                padding: 12px;
+            }
+            .note h2 {
+                font-size: 18px;
+            }
+            .note p {
+                font-size: 14px;
+            }
+            .note textarea {
+                font-size: 14px;
+                padding: 8px 0;
+            }
+            #modal-content {
+                padding: 16px;
+            }
+            #modal-content h2 {
+                font-size: 20px;
+            }
+            #modal-content textarea {
+                font-size: 14px;
+                padding: 10px;
+            }
+            #modal-content .modal-button,
+            #modal-content .modal-cancel-button {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+            .error-message{
+                font-size: 12px;
+            }
+        }
+
+        /* Styles for the note detail page */
+        .note-detail-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 800px;
+            margin-top: 20px;
+            margin-bottom: 70px;
+            padding-bottom: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .note-detail {
+            background-color: #262626;
+            color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .note-detail h2 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #ffeb3b;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+
+        .note-detail p {
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .back-button {
+            background-color: #808080;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        .back-button:hover {
+            background-color: #696969;
+        }
+
+        .back-button:active {
+            background-color: #555555;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="add-note-button">Add Note</button>
+        <button id="export-notes-button">Export Notes</button>
+    </div>
+    <div id="note-container">
+        </div>
+
+    <div id="modal" class="hidden">
+        <div id="modal-content">
+            <h2>Edit Note</h2>
+            <div class="modal-title-input-container">
+                <input type="text" id="modal-title-input" placeholder="Enter title" />
+            </div>
+            <textarea id="modal-textarea"></textarea>
+            <p id="modal-error-message" class="error-message">Please enter note text.</p>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button id="modal-save-button" class="modal-button">Save</button>
+                <button id="modal-cancel-button" class="modal-button modal-cancel-button">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="note-detail-view" class="hidden note-detail-container">
+        <button class="back-button">Back</button>
+        <div class="note-detail">
+            <h2 id="note-detail-title"></h2>
+            <p id="note-detail-content"></p>
+        </div>
+    </div>
+
+    <script>
+        const noteContainer = document.getElementById('note-container');
+        const addNoteButton = document.getElementById('add-note-button');
+        const exportNotesButton = document.getElementById('export-notes-button');
+        const modal = document.getElementById('modal');
+        const modalTextarea = document.getElementById('modal-textarea');
+        const modalSaveButton = document.getElementById('modal-save-button');
+        const modalCancelButton = document.getElementById('modal-cancel-button');
+        const modalTitle = document.getElementById('modal-content').querySelector('h2');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        const noteDetailView = document.getElementById('note-detail-view');
+        const noteDetailTitleElement = document.getElementById('note-detail-title');
+        const noteDetailContentElement = document.getElementById('note-detail-content');
+        const backButton = document.querySelector('.back-button'); // added back button
+
+        let notes = [];
+        let editingIndex = null;
+        let isEditing = false;
+        let currentNoteId = null;
+
+        loadNotes();
+        renderNotes();
+
+        addNoteButton.addEventListener('click', () => {
+            modalTitle.textContent = "Add New Note";
+            modalTextarea.value = '';
+            modal.style.display = 'flex';
+            editingIndex = null;
+            modalErrorMessage.classList.remove('show');
+            const titleInput = document.getElementById('modal-title-input');
+            if (titleInput) {
+                titleInput.value = '';
+            } else {
+                const titleInputContainer = document.querySelector('.modal-title-input-container');
+                titleInputContainer.insertAdjacentHTML('afterbegin', `<input type="text" id="modal-title-input" placeholder="Enter title" style="margin-bottom: 10px;" />`);
+            }
+            isEditing = false;
+            hideTextareaInNotes();
+            noteDetailView.classList.add('hidden');
+        });
+
+        modalCancelButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+            isEditing = false;
+            hideTextareaInNotes();
+        });
+
+        modalSaveButton.addEventListener('click', () => {
+            const noteText = modalTextarea.value.trim();
+            if (noteText === '') {
+                modalErrorMessage.classList.add('show');
+                return;
+            }
+
+            const titleInput = document.getElementById('modal-title-input');
+            const noteTitle = titleInput ? titleInput.value.trim() : `Note ${notes.length + 1}`;
+
+
+            if (editingIndex !== null) {
+                notes[editingIndex].title = noteTitle;
+                notes[editingIndex].content = noteText;
+            } else {
+                const newNote = {
+                    title: noteTitle,
+                    content: noteText,
+                    id: Date.now()
+                };
+                notes.push(newNote);
+            }
+            saveNotes();
+            renderNotes();
+            modal.style.display = 'none';
+            modalErrorMessage.classList.remove('show');
+            isEditing = false;
+            hideTextareaInNotes();
+        });
+
+        exportNotesButton.addEventListener('click', () => {
+            if (notes.length === 0) {
+                alert('No notes to export.');
+                return;
+            }
+            const noteText = notes.map(note => `${note.title}:\n${note.content}`).join('\n\n');
+            const blob = new Blob([noteText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'notes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        function renderNotes() {
+            noteContainer.innerHTML = '';
+            notes.forEach((note, index) => {
+                const noteDiv = document.createElement('div');
+                noteDiv.classList.add('note');
+                noteDiv.dataset.noteId = note.id;
+                noteDiv.innerHTML = `
+                    <h2>${note.title}</h2>
+                    <p>${note.content}</p>
+                    <button class="delete-button" data-index="${index}"></button>
+                `;
+                noteContainer.appendChild(noteDiv);
+
+                noteDiv.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const clickedNoteId = parseInt(noteDiv.dataset.noteId);
+                    currentNoteId = clickedNoteId;
+                    //showNoteDetail(clickedNoteId);  // Removed:  We will redirect instead
+                    window.location.href = `note.html?id=${clickedNoteId}`; // Redirect to new page
+                });
+
+                const deleteButton = noteDiv.querySelector('.delete-button');
+                deleteButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    notes = notes.filter((_, i) => i !== index);
+                    saveNotes();
+                    renderNotes();
+                });
+
+                noteDiv.addEventListener('dblclick', (event) => {
+                    event.stopPropagation();
+                    const noteTextarea = noteDiv.querySelector('textarea');
+                    noteTextarea.style.display = 'block';
+                    noteTextarea.focus();
+
+                    editingIndex = index;
+                    modalTextarea.value = noteTextarea.value;
+                    modalTitle.textContent = "Edit Note";
+                    modal.style.display = 'flex';
+                    modalErrorMessage.classList.remove('show');
+
+                    const titleInputContainer = document.querySelector('.modal-title-input-container');
+                    if (!document.getElementById('modal-title-input')) {
+                         modalContent.insertAdjacentHTML('afterbegin', `<div class="modal-title-input-container"><input type="text" id="modal-title-input" value="${notes[index].title}" placeholder="Enter title" style="margin-bottom: 10px;" /></div>`);
+                    }
+                    else{
+                         const titleInput = document.getElementById('modal-title-input');
+                         titleInput.value=notes[index].title;
+                    }
+                    isEditing = true;
+                    hideTextareaInNotes();
+                    noteTextarea.style.display = 'block';
+                });
+            });
+        }
+
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('notes');
+            if (savedNotes) {
+                try {
+                    notes = JSON.parse(savedNotes);
+                } catch (e) {
+                    console.error('Error parsing saved notes:', e);
+                    notes = [];
+                }
+            }
+        }
+
+        function saveNotes() {
+            if (isEditing || editingIndex === null) {
+                localStorage.setItem('notes', JSON.stringify(notes));
+            }
+        }
+
+        function hideTextareaInNotes() {
+            const textareas = document.querySelectorAll('.note textarea');
+            textareas.forEach(textarea => {
+                textarea.style.display = 'none';
+            });
+        }
+
+        function showNoteDetail(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                noteDetailTitleElement.textContent = note.title;
+                noteDetailContentElement.textContent = note.content;
+                noteDetailView.classList.remove('hidden');
+                noteContainer.classList.add('hidden');
+                toolbar.style.display = 'none';
+            }
+        }
+
+        backButton.addEventListener('click', () => {
+            noteDetailView.classList.add('hidden');
+            noteContainer.classList.remove('hidden');
+            toolbar.style.display = 'flex';
+            currentNoteId = null;
+        });
+    </script>
+</body>
+</html>
